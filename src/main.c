@@ -1,10 +1,16 @@
 #include <SDL2/SDL.h>
+#include <stdint.h>
 #include <stdbool.h>
 #include <stdio.h>
+
 
 bool is_running = false;
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
+uint32_t* color_buffer = NULL;
+int window_width = 800;
+int window_height = 600;
+
 
 bool initialize_window(void) {
   if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
@@ -15,7 +21,7 @@ bool initialize_window(void) {
   // Create SDL window
   window =
       SDL_CreateWindow(NULL, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                       800, 600, SDL_WINDOW_BORDERLESS);
+                       window_width, window_height, SDL_WINDOW_BORDERLESS);
 
   if (!window) {
     fprintf(stderr, "Error creating SDL window\n");
@@ -32,7 +38,9 @@ bool initialize_window(void) {
   return true;
 }
 
-void setup(void) {}
+void setup(void) {
+  color_buffer = (uint32_t*)malloc(sizeof(uint32_t) * window_width * window_height);
+}
 
 void process_input(void) {
   SDL_Event event;
@@ -58,6 +66,13 @@ void render(void) {
 	SDL_RenderPresent(renderer);
 }
 
+void destroy_window(void){
+  free(color_buffer);
+  SDL_DestroyRenderer(renderer);
+  SDL_DestroyWindow(window);
+  SDL_Quit();
+}
+
 int main(void) {
   is_running = initialize_window();
 
@@ -68,6 +83,8 @@ int main(void) {
     update();
     render();
   }
+
+  destroy_window();
 
   return 0;
 }
